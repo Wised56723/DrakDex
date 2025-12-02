@@ -1,70 +1,69 @@
-package com.luis.drakdex.controller; // <--- Mudamos aqui!
+package com.luis.drakdex.controller;
 
-// Criatura model moved into this file to avoid missing package error
-
+import com.luis.drakdex.model.Criatura;
+import com.luis.drakdex.repository.CriaturaRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 
 @RestController
 @RequestMapping("/api/criaturas")
 public class CriaturaController {
 
-    // Simple in-memory repository to avoid depending on a missing package
-    private final List<Criatura> repository = new ArrayList<>();
-    private final AtomicLong idGen = new AtomicLong(1);
+    @Autowired
+    private CriaturaRepository repository;
 
+    // 1. LISTAR TODAS (GET)
+    // Rota: http://localhost:8080/api/criaturas
     @GetMapping
     public List<Criatura> listarTodas() {
-        return repository;
+        return repository.findAll();
     }
 
-    @PostMapping
-    public Criatura criar(@RequestBody Criatura criatura) {
-        criatura.setId(idGen.getAndIncrement());
-        repository.add(criatura);
-        return criatura;
-    }
-    
+    // 2. BUSCAR POR ID (GET)
+    // Rota: http://localhost:8080/api/criaturas/{id}
     @GetMapping("/{id}")
     public ResponseEntity<Criatura> buscarPorId(@PathVariable Long id) {
-        Optional<Criatura> opt = repository.stream().filter(c -> c.getId().equals(id)).findFirst();
-        return opt
-                .map(record -> ResponseEntity.ok().body(record))
-                .orElse(ResponseEntity.notFound().build());
+        return repository.findById(id)
+                .map(record -> ResponseEntity.ok().body(record)) // Se achar, retorna 200 OK e o objeto
+                .orElse(ResponseEntity.notFound().build());      // Se não achar, retorna 404 Not Found
     }
-    
+
+    // 3. CRIAR NOVA (POST)
+    // Rota: http://localhost:8080/api/criaturas
+    @PostMapping
+    public Criatura criar(@RequestBody Criatura criatura) {
+        return repository.save(criatura);
+    }
+
+    // 4. ATUALIZAR (PUT) - O NOVO MÉTODO
+    // Rota: http://localhost:8080/api/criaturas/{id}
+    @PutMapping("/{id}")
+    public ResponseEntity<Criatura> atualizar(@PathVariable Long id, @RequestBody Criatura detalhesAtualizados) {
+        return repository.findById(id)
+                .map(record -> {
+                    // Atualiza os dados do objeto encontrado com os novos dados
+                    record.setNome(detalhesAtualizados.getNome());
+                    record.setTipo(detalhesAtualizados.getTipo());
+                    record.setNivel(detalhesAtualizados.getNivel());
+                    record.setDescricao(detalhesAtualizados.getDescricao());
+                    
+                    // Salva a versão atualizada no banco
+                    Criatura atualizado = repository.save(record);
+                    return ResponseEntity.ok().body(atualizado);
+                }).orElse(ResponseEntity.notFound().build());
+    }
+
+    // 5. DELETAR (DELETE)
+    // Rota: http://localhost:8080/api/criaturas/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletar(@PathVariable Long id) {
-        Optional<Criatura> opt = repository.stream().filter(c -> c.getId().equals(id)).findFirst();
-        if (opt.isPresent()) {
-            repository.remove(opt.get());
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-}
-
-// Simple package-private model class to satisfy compilation; replace with proper entity later
-class Criatura {
-    private Long id;
-    private String nome;
-
-    public Long getId() {
-        return id;
-    }
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-    public void setNome(String nome) {
-        this.nome = nome;
+        return repository.findById(id)
+                .map(record -> {
+                    repository.deleteById(id);
+                    return ResponseEntity.ok().build(); // Retorna 200 OK (sucesso)
+                }).orElse(ResponseEntity.notFound().build()); // Retorna 404 se o ID não existir
     }
 }
