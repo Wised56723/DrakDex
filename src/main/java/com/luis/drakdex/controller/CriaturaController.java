@@ -1,9 +1,9 @@
 package com.luis.drakdex.controller;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,12 +12,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.luis.drakdex.dto.CriaturaDTO;
 import com.luis.drakdex.exception.ResourceNotFoundException;
 import com.luis.drakdex.model.Criatura;
 import com.luis.drakdex.repository.CriaturaRepository;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/criaturas")
@@ -26,12 +29,16 @@ public class CriaturaController {
     @Autowired
     private CriaturaRepository repository;
 
-    // 1. LISTAR TODAS (Retorna Lista de DTOs)
+    // 1. LISTAR TODAS (COM PAGINAÇÃO)
+    // Exemplo: GET /api/criaturas?page=0&size=5
     @GetMapping
-    public List<CriaturaDTO> listarTodas() {
-        return repository.findAll().stream()
-                .map(this::convertToDto) // Converte cada entidade da lista em DTO
-                .collect(Collectors.toList());
+    public ResponseEntity<Page<CriaturaDTO>> listarTodas(
+            @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
+        
+        Page<CriaturaDTO> pagina = repository.findAll(pageable)
+                .map(this::convertToDto);
+        
+        return ResponseEntity.ok(pagina);
     }
 
     // 2. BUSCAR POR ID
@@ -42,25 +49,20 @@ public class CriaturaController {
         return ResponseEntity.ok().body(convertToDto(criatura));
     }
 
-    // 3. CRIAR NOVA (Recebe DTO -> Salva Entidade -> Retorna DTO)
+    // 3. CRIAR NOVA
     @PostMapping
-    public CriaturaDTO criar(@RequestBody CriaturaDTO criaturaDTO) {
-        // Converte DTO para Entidade para salvar no banco
+    public CriaturaDTO criar(@Valid @RequestBody CriaturaDTO criaturaDTO) {
         Criatura criatura = convertToEntity(criaturaDTO);
-        
         Criatura criaturaSalva = repository.save(criatura);
-        
-        // Retorna o DTO da criatura salva
         return convertToDto(criaturaSalva);
     }
 
     // 4. ATUALIZAR
     @PutMapping("/{id}")
-    public ResponseEntity<CriaturaDTO> atualizar(@PathVariable Long id, @RequestBody CriaturaDTO criaturaDTO) {
+    public ResponseEntity<CriaturaDTO> atualizar(@PathVariable Long id, @Valid @RequestBody CriaturaDTO criaturaDTO) {
         Criatura criatura = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Criatura não encontrada para o ID :: " + id));
 
-        // Atualiza os dados da entidade com base no DTO recebido
         criatura.setNome(criaturaDTO.getNome());
         criatura.setTipo(criaturaDTO.getTipo());
         criatura.setNivel(criaturaDTO.getNivel());
@@ -80,11 +82,36 @@ public class CriaturaController {
         return ResponseEntity.ok().build();
     }
 
-    // ==========================================
-    // MÉTODOS AUXILIARES DE CONVERSÃO (MAPPER)
-    // ==========================================
-    
-    // Converte Entidade (Banco) -> DTO (Visualização)
+    // 6. BUSCAR POR NOME (Paginado)
+    // AQUI ESTAVA O ERRO: Agora passamos 'pageable' para o repositório
+    @GetMapping("/busca")
+    public ResponseEntity<Page<CriaturaDTO>> buscarPorNome(
+            @RequestParam String nome,
+            @PageableDefault(size = 10) Pageable pageable) {
+        
+        // Correção: repository.findByNome...(nome, pageable)
+        Page<CriaturaDTO> pagina = repository.findByNomeContainingIgnoreCase(nome, pageable)
+                .map(this::convertToDto);
+                
+        return ResponseEntity.ok(pagina);
+    }
+
+    // 7. FILTRAR POR TIPO (Paginado)
+    // AQUI ESTAVA O ERRO: Agora passamos 'pageable' para o repositório
+    @GetMapping("/filtro")
+    public ResponseEntity<Page<CriaturaDTO>> filtrarPorTipo(
+            @RequestParam String tipo,
+            @PageableDefault(size = 10) Pageable pageable) {
+        
+        // Correção: repository.findByTipo(tipo, pageable)
+        Page<CriaturaDTO> pagina = repository.findByTipo(tipo, pageable)
+                .map(this::convertToDto);
+                
+        return ResponseEntity.ok(pagina);
+    }
+
+    // --- CONVERSORES ---
+
     private CriaturaDTO convertToDto(Criatura criatura) {
         CriaturaDTO dto = new CriaturaDTO();
         dto.setId(criatura.getId());
@@ -95,10 +122,8 @@ public class CriaturaController {
         return dto;
     }
 
-    // Converte DTO (Input) -> Entidade (Banco)
     private Criatura convertToEntity(CriaturaDTO criaturaDTO) {
         Criatura criatura = new Criatura();
-        // Não setamos o ID aqui porque o banco gera automaticamente no create
         criatura.setNome(criaturaDTO.getNome());
         criatura.setTipo(criaturaDTO.getTipo());
         criatura.setNivel(criaturaDTO.getNivel());
