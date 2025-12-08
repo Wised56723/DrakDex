@@ -9,8 +9,11 @@ public class CorsConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // Permite acesso a todas as rotas
-                .allowedOrigins("http://localhost:5173") // Apenas permite o Front (Vite/React)
+        registry.addMapping("/**")
+                .allowedOrigins(
+                    "http://localhost:5173", // React Local
+                    "https://drakdex-production.up.railway.app" // Railway
+                )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT");
     }
 }
