@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import com.luis.drakdex.dto.CriaturaDTO;
 import com.luis.drakdex.exception.ResourceNotFoundException;
 import com.luis.drakdex.model.Criatura;
 import com.luis.drakdex.repository.CriaturaRepository;
+import com.luis.drakdex.service.DndApiService;
 
 import jakarta.validation.Valid;
 
@@ -28,6 +30,10 @@ public class CriaturaController {
 
     @Autowired
     private CriaturaRepository repository;
+    
+    @Autowired // Injeta o serviço novo
+    private DndApiService dndApiService;
+
 
     // 1. LISTAR TODAS (COM PAGINAÇÃO)
     // Exemplo: GET /api/criaturas?page=0&size=5
@@ -51,6 +57,7 @@ public class CriaturaController {
 
     // 3. CRIAR NOVA
     @PostMapping
+    @Transactional
     public CriaturaDTO criar(@Valid @RequestBody CriaturaDTO criaturaDTO) {
         Criatura criatura = convertToEntity(criaturaDTO);
         Criatura criaturaSalva = repository.save(criatura);
@@ -59,6 +66,7 @@ public class CriaturaController {
 
     // 4. ATUALIZAR
     @PutMapping("/{id}")
+    @Transactional
     public ResponseEntity<CriaturaDTO> atualizar(@PathVariable Long id, @Valid @RequestBody CriaturaDTO criaturaDTO) {
         Criatura criatura = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Criatura não encontrada para o ID :: " + id));
@@ -74,6 +82,7 @@ public class CriaturaController {
 
     // 5. DELETAR
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<?> deletar(@PathVariable Long id) {
         Criatura criatura = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Criatura não encontrada para o ID :: " + id));
@@ -108,6 +117,14 @@ public class CriaturaController {
                 .map(this::convertToDto);
                 
         return ResponseEntity.ok(pagina);
+    }
+
+    // Rota Especial: Consome dados externos do DnD API
+    // GET /api/criaturas/integracao/dnd
+    @GetMapping("/integracao/dnd")
+    public ResponseEntity<Object> buscarDaApiDnd() {
+        Object dadosExternos = dndApiService.buscarMonstrosExternos();
+        return ResponseEntity.ok(dadosExternos);
     }
 
     // --- CONVERSORES ---
