@@ -24,5 +24,5 @@ COPY --from=build /app/target/*.jar app.jar
 # Expomos a porta (apenas documentação, o Railway controla isso via variável)
 EXPOSE 8080
 
-# Comando para iniciar o servidor
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Alteração para suportar a injeção de porta do Render
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8080} -jar app.jar"]
