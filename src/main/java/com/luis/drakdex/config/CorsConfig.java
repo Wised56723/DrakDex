@@ -12,7 +12,7 @@ public class CorsConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOrigins(
                     "http://localhost:5173", // React Local
-                    "https://drakdex-production.up.railway.app" // Railway
+                    "https://drak-dex-front-end.vercel.app" // Vercel Deployment
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT");
     }
