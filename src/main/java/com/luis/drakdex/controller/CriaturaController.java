@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.luis.drakdex.dto.CriaturaDTO;
 import com.luis.drakdex.exception.ResourceNotFoundException;
 import com.luis.drakdex.model.Criatura;
+import com.luis.drakdex.model.Usuario;
 import com.luis.drakdex.repository.CriaturaRepository;
 import com.luis.drakdex.service.DndApiService;
 
@@ -59,10 +61,20 @@ public class CriaturaController {
     @PostMapping
     @Transactional
     public CriaturaDTO criar(@Valid @RequestBody CriaturaDTO criaturaDTO) {
-        Criatura criatura = convertToEntity(criaturaDTO);
-        Criatura criaturaSalva = repository.save(criatura);
-        return convertToDto(criaturaSalva);
-    }
+            // 1. Converter DTO para Entidade
+            Criatura criatura = convertToEntity(criaturaDTO);
+            
+            // 2. MÁGICA: Pegar o usuário logado do Token
+            Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            
+            // 3. Associar o usuário à criatura
+            criatura.setUsuario(usuarioLogado);
+            
+            // 4. Salvar
+            Criatura criaturaSalva = repository.save(criatura);
+            
+            return convertToDto(criaturaSalva);
+        }
 
     // 4. ATUALIZAR
     @PutMapping("/{id}")
@@ -136,6 +148,12 @@ public class CriaturaController {
         dto.setTipo(criatura.getTipo());
         dto.setNivel(criatura.getNivel());
         dto.setDescricao(criatura.getDescricao());
+        
+        // NOVO: Pega o vulgo do usuário dono da criatura
+        if (criatura.getUsuario() != null) {
+            dto.setCriadorVulgo(criatura.getUsuario().getVulgo());
+        }
+        
         return dto;
     }
 
