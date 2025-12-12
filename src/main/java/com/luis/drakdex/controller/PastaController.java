@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,4 +38,15 @@ public class PastaController {
         Usuario usuario = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(service.listarMinhasPastasRaiz(usuario));
     }
+
+    @GetMapping("/publicas")
+    public ResponseEntity<List<PastaResponseDTO>> listarPublicas() {
+        return ResponseEntity.ok(service.listarPublicas());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PastaResponseDTO> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(service.buscarPorId(id));
+}
+
 }

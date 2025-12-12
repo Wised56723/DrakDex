@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.luis.drakdex.dto.CriaturaDTO;
 import com.luis.drakdex.dto.PastaRequestDTO;
 import com.luis.drakdex.dto.PastaResponseDTO;
 import com.luis.drakdex.model.Pasta;
@@ -72,11 +73,39 @@ public class PastaService {
                 .collect(Collectors.toList());
     }
 
-    // Método auxiliar recursivo para montar a árvore
+    // NOVO: Listar todas as pastas públicas RAÍZES (Global)
+    public List<PastaResponseDTO> listarPublicas() {
+        return repository.findAll().stream()
+                .filter(p -> p.isPublica() && p.getPastaPai() == null) // Apenas raízes públicas
+                .map(this::converterParaDTO)
+                .collect(Collectors.toList());
+    }
+
+    // NOVO: Buscar uma pasta por ID (Para entrar nela)
+    public PastaResponseDTO buscarPorId(Long id) {
+        Pasta pasta = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pasta não encontrada"));
+        return converterParaDTO(pasta);
+    }
+
+    // ATUALIZAR O CONVERSOR
     private PastaResponseDTO converterParaDTO(Pasta pasta) {
         List<PastaResponseDTO> filhosDTO = pasta.getSubPastas().stream()
-                .map(this::converterParaDTO) // Recursividade mágica aqui
+                .map(this::converterParaDTO)
                 .collect(Collectors.toList());
+
+        // Converter as criaturas para DTO
+        List<CriaturaDTO> criaturasDTO = pasta.getCriaturas().stream()
+                .map(c -> {
+                     CriaturaDTO dto = new CriaturaDTO();
+                     dto.setId(c.getId());
+                     dto.setNome(c.getNome());
+                     dto.setTipo(c.getTipo());
+                     dto.setNivel(c.getNivel());
+                     dto.setDescricao(c.getDescricao());
+                     dto.setCriadorVulgo(c.getUsuario().getVulgo());
+                     return dto;
+                }).collect(Collectors.toList());
 
         return new PastaResponseDTO(
             pasta.getId(),
@@ -84,7 +113,9 @@ public class PastaService {
             pasta.isPublica(),
             pasta.getPastaPai() != null ? pasta.getPastaPai().getId() : null,
             filhosDTO,
-            pasta.getCriaturas().size()
+            pasta.getCriaturas().size(),
+            criaturasDTO, // <--- Passamos a lista
+            pasta.getUsuario().getVulgo() // <--- Passamos o dono
         );
     }
 }
