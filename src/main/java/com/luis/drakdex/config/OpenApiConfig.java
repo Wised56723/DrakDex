@@ -14,9 +14,9 @@ import io.swagger.v3.oas.models.servers.Server;
 @Configuration
 public class OpenApiConfig {
 
-    // Lê a URL do Railway das variáveis (ou usa localhost se não existir)
-    @Value("${railway.public.url:http://localhost:8080}")
-    private String railwayUrl;
+    // Lê a URL do Render das variáveis (ou usa localhost se não existir)
+    @Value("${https://drakdex-api.onrender.com:http://localhost:8080}")
+    private String ServerURL;
 
     @Bean
     public OpenAPI customOpenAPI() {
@@ -28,7 +28,7 @@ public class OpenApiConfig {
                 .termsOfService("http://swagger.io/terms/")
                 .license(new License().name("Apache 2.0").url("http://springdoc.org")))
             .servers(List.of(
-                new Server().url(railwayUrl).description("Servidor Principal"),
+                new Server().url("https://drakdex-api.onrender.com").description("Servidor de Produção (Render)"),
                 new Server().url("http://localhost:8080").description("Servidor Local")
             ));
     }
