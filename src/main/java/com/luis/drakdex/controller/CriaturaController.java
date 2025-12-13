@@ -20,11 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.luis.drakdex.dto.CriaturaDTO;
 import com.luis.drakdex.exception.ResourceNotFoundException;
 import com.luis.drakdex.model.Criatura;
+import com.luis.drakdex.model.Pasta;
 import com.luis.drakdex.model.Usuario;
 import com.luis.drakdex.repository.CriaturaRepository;
+import com.luis.drakdex.repository.PastaRepository;
 import com.luis.drakdex.service.DndApiService;
 
-import jakarta.validation.Valid;
+import jakarta.validation.Valid; // Importar Pasta
 
 @RestController
 @RequestMapping("/api/criaturas")
@@ -36,6 +38,8 @@ public class CriaturaController {
     @Autowired // Injeta o serviço novo
     private DndApiService dndApiService;
 
+    @Autowired
+    private PastaRepository pastaRepository;
 
     // 1. LISTAR TODAS (COM PAGINAÇÃO)
     // Exemplo: GET /api/criaturas?page=0&size=5
@@ -70,9 +74,22 @@ public class CriaturaController {
             // 3. Associar o usuário à criatura
             criatura.setUsuario(usuarioLogado);
             
-            // 4. Salvar
-            Criatura criaturaSalva = repository.save(criatura);
+
+            // 4. Associar à pasta, se fornecido
+            if (criaturaDTO.getPastaId() != null) {
+                Pasta pasta = pastaRepository.findById(criaturaDTO.getPastaId())
+                    .orElseThrow(() -> new RuntimeException("Pasta não encontrada"));
             
+                // Segurança: A pasta pertence ao usuário?
+                if (!pasta.getUsuario().getId().equals(usuarioLogado.getId())) {
+                    throw new RuntimeException("Você não pode criar monstros na pasta de outro caçador!");
+                }
+            
+            criatura.setPasta(pasta);
+            }
+
+            // 5. Salvar
+            Criatura criaturaSalva = repository.save(criatura);
             return convertToDto(criaturaSalva);
         }
 

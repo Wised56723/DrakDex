@@ -15,9 +15,9 @@ public class CriaturaDTO {
     
     private Integer nivel;
     private String descricao;
-
-    // --- NOVO CAMPO (Apenas para Leitura) ---
-    // Não precisamos receber isso no POST (o token já diz quem é),
-    // mas vamos enviar isso no GET.
-    private String criadorVulgo; 
+    
+    private String criadorVulgo; // Apenas leitura (saída)
+    
+    // --- NOVO CAMPO ---
+    private Long pastaId; // O ID da pasta onde vamos salvar (entrada)
 }
