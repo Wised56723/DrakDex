@@ -10,8 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.luis.drakdex.dto.ItemRequestDTO;
 import com.luis.drakdex.dto.ItemResponseDTO;
 import com.luis.drakdex.model.Item;
+import com.luis.drakdex.model.Pasta;
 import com.luis.drakdex.model.Usuario;
+import com.luis.drakdex.model.enums.CategoriaPasta;
 import com.luis.drakdex.repository.ItemRepository;
+import com.luis.drakdex.repository.PastaRepository;
 
 @Service
 public class ItemService {
@@ -19,11 +22,33 @@ public class ItemService {
     @Autowired
     private ItemRepository repository;
 
+    @Autowired
+    private PastaRepository pastaRepository; // Necessário para validar a pasta
+
     @Transactional
     public ItemResponseDTO criar(ItemRequestDTO dados, Usuario usuario) {
         Item item = new Item();
         copiarDados(item, dados);
         item.setUsuario(usuario);
+
+        // LÓGICA DE VÍNCULO COM PASTA
+        if (dados.pastaId() != null) {
+            Pasta pasta = pastaRepository.findById(dados.pastaId())
+                    .orElseThrow(() -> new RuntimeException("Pasta não encontrada"));
+
+            // Segurança: A pasta é minha?
+            if (!pasta.getUsuario().getId().equals(usuario.getId())) {
+                throw new RuntimeException("Você não pode adicionar itens na pasta de outro usuário!");
+            }
+
+            // Validação de Categoria: É uma pasta de Itens?
+            if (pasta.getCategoria() != CategoriaPasta.ITEM) {
+                throw new RuntimeException("Esta pasta é para Criaturas, não para Itens!");
+            }
+
+            item.setPasta(pasta);
+        }
+
         repository.save(item);
         return converterParaDTO(item);
     }
@@ -35,8 +60,6 @@ public class ItemService {
                 .collect(Collectors.toList());
     }
 
-    // --- NOVOS MÉTODOS ---
-
     public ItemResponseDTO buscarPorId(Long id, Usuario usuario) {
         Item item = buscarItemValidado(id, usuario);
         return converterParaDTO(item);
@@ -45,8 +68,7 @@ public class ItemService {
     @Transactional
     public ItemResponseDTO atualizar(Long id, ItemRequestDTO dados, Usuario usuario) {
         Item item = buscarItemValidado(id, usuario);
-        copiarDados(item, dados); // Atualiza os campos
-        // O JPA detecta a mudança e salva automático no fim da transação
+        copiarDados(item, dados);
         return converterParaDTO(item);
     }
 
@@ -58,18 +80,15 @@ public class ItemService {
 
     // --- MÉTODOS AUXILIARES ---
 
-    // Busca o item e garante que pertence ao usuário logado
     private Item buscarItemValidado(Long id, Usuario usuario) {
         Item item = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Item não encontrado"));
-
         if (!item.getUsuario().getId().equals(usuario.getId())) {
             throw new RuntimeException("Você não tem permissão para mexer neste item!");
         }
         return item;
     }
 
-    // Copia DTO -> Entidade (Reutilizado no Criar e Atualizar)
     private void copiarDados(Item item, ItemRequestDTO dados) {
         item.setNome(dados.nome());
         item.setDescricao(dados.descricao());

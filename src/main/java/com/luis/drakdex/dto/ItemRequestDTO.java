@@ -15,5 +15,6 @@ public record ItemRequestDTO(
     String preco,
     String dano,
     String defesa,
-    String propriedades
+    String propriedades,
+    Long pastaId // <--- NOVO: ID da pasta onde salvar
 ) {}

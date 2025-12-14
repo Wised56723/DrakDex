@@ -28,13 +28,13 @@ public class ItemController {
     @Autowired
     private ItemService service;
 
-    // Método auxiliar para pegar o usuário logado (evita repetir código)
     private Usuario getUsuarioLogado() {
         return (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 
     @PostMapping
     public ResponseEntity<ItemResponseDTO> criar(@Valid @RequestBody ItemRequestDTO dados) {
+        // A mágica de vincular à pasta agora acontece dentro do service.criar
         var itemCriado = service.criar(dados, getUsuarioLogado());
         return ResponseEntity.ok(itemCriado);
     }
@@ -43,8 +43,6 @@ public class ItemController {
     public ResponseEntity<List<ItemResponseDTO>> listarMeusItens() {
         return ResponseEntity.ok(service.listarMeusItens(getUsuarioLogado()));
     }
-
-    // --- NOVOS ENDPOINTS ---
 
     @GetMapping("/{id}")
     public ResponseEntity<ItemResponseDTO> buscarPorId(@PathVariable Long id) {
@@ -59,6 +57,6 @@ public class ItemController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.deletar(id, getUsuarioLogado());
-        return ResponseEntity.noContent().build(); // Retorna 204 No Content
+        return ResponseEntity.noContent().build();
     }
 }

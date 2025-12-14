@@ -5,13 +5,16 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.luis.drakdex.model.Pasta;
+import com.luis.drakdex.model.enums.CategoriaPasta;
 
 public interface PastaRepository extends JpaRepository<Pasta, Long> {
     
-    // Buscar apenas as pastas RAIZ (sem pai) de um usuário específico
-    // Isso serve para carregar a árvore inicial "Meus Bestiários"
-    List<Pasta> findByUsuarioIdAndPastaPaiIsNull(Long usuarioId);
+    // Buscar pastas raízes filtrando pelo TIPO (CRIATURA ou ITEM)
+    List<Pasta> findByUsuarioIdAndPastaPaiIsNullAndCategoria(Long usuarioId, CategoriaPasta categoria);
     
-    // Buscar pastas públicas raízes (para ver perfis de outros)
-    List<Pasta> findByUsuarioIdAndPastaPaiIsNullAndPublicaTrue(Long usuarioId);
+    // Buscar pastas públicas raízes filtrando pelo TIPO
+    List<Pasta> findByUsuarioIdAndPastaPaiIsNullAndPublicaTrueAndCategoria(Long usuarioId, CategoriaPasta categoria);
+
+    // Listar TODAS as públicas raízes por categoria (para o feed geral)
+    List<Pasta> findByPublicaTrueAndPastaPaiIsNullAndCategoria(CategoriaPasta categoria);
 }

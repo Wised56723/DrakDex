@@ -1,5 +1,6 @@
 package com.luis.drakdex.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.luis.drakdex.model.enums.Raridade;
 import com.luis.drakdex.model.enums.TipoItem;
 
@@ -50,4 +51,10 @@ public class Item {
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
+
+    // NOVO: VINCULO COM PASTA
+    @ManyToOne
+    @JoinColumn(name = "pasta_id", nullable = true) // Nullable porque pode ser criado solto
+    @JsonIgnore
+    private Pasta pasta;
 }
