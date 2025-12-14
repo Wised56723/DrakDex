@@ -22,23 +22,9 @@ public class ItemService {
     @Transactional
     public ItemResponseDTO criar(ItemRequestDTO dados, Usuario usuario) {
         Item item = new Item();
-        
-        // Mapeamento DTO -> Entidade
-        item.setNome(dados.nome());
-        item.setDescricao(dados.descricao());
-        item.setTipo(dados.tipo());
-        item.setRaridade(dados.raridade()); // Pode ser null, sem problemas
-        item.setPeso(dados.peso());
-        item.setPreco(dados.preco());
-        item.setDano(dados.dano());
-        item.setDefesa(dados.defesa());
-        item.setPropriedades(dados.propriedades());
-        
-        // Dono do Item
+        copiarDados(item, dados);
         item.setUsuario(usuario);
-
         repository.save(item);
-        
         return converterParaDTO(item);
     }
 
@@ -49,7 +35,53 @@ public class ItemService {
                 .collect(Collectors.toList());
     }
 
-    // Método auxiliar para converter Entidade -> DTO de Resposta
+    // --- NOVOS MÉTODOS ---
+
+    public ItemResponseDTO buscarPorId(Long id, Usuario usuario) {
+        Item item = buscarItemValidado(id, usuario);
+        return converterParaDTO(item);
+    }
+
+    @Transactional
+    public ItemResponseDTO atualizar(Long id, ItemRequestDTO dados, Usuario usuario) {
+        Item item = buscarItemValidado(id, usuario);
+        copiarDados(item, dados); // Atualiza os campos
+        // O JPA detecta a mudança e salva automático no fim da transação
+        return converterParaDTO(item);
+    }
+
+    @Transactional
+    public void deletar(Long id, Usuario usuario) {
+        Item item = buscarItemValidado(id, usuario);
+        repository.delete(item);
+    }
+
+    // --- MÉTODOS AUXILIARES ---
+
+    // Busca o item e garante que pertence ao usuário logado
+    private Item buscarItemValidado(Long id, Usuario usuario) {
+        Item item = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Item não encontrado"));
+
+        if (!item.getUsuario().getId().equals(usuario.getId())) {
+            throw new RuntimeException("Você não tem permissão para mexer neste item!");
+        }
+        return item;
+    }
+
+    // Copia DTO -> Entidade (Reutilizado no Criar e Atualizar)
+    private void copiarDados(Item item, ItemRequestDTO dados) {
+        item.setNome(dados.nome());
+        item.setDescricao(dados.descricao());
+        item.setTipo(dados.tipo());
+        item.setRaridade(dados.raridade());
+        item.setPeso(dados.peso());
+        item.setPreco(dados.preco());
+        item.setDano(dados.dano());
+        item.setDefesa(dados.defesa());
+        item.setPropriedades(dados.propriedades());
+    }
+
     private ItemResponseDTO converterParaDTO(Item item) {
         return new ItemResponseDTO(
             item.getId(),
