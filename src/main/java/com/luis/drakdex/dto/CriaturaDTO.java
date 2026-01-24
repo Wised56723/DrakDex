@@ -15,9 +15,7 @@ public class CriaturaDTO {
     
     private Integer nivel;
     private String descricao;
-    
     private String criadorVulgo; // Apenas leitura (saída)
-    
-    // --- NOVO CAMPO ---
     private Long pastaId; // O ID da pasta onde vamos salvar (entrada)
+    private String imagemUrl; // Campo para a URL da imagem
 }

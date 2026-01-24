@@ -108,6 +108,7 @@ public class PastaService {
                      dto.setTipo(c.getTipo());
                      dto.setNivel(c.getNivel());
                      dto.setDescricao(c.getDescricao());
+                     dto.setImagemUrl(c.getImagemUrl()); // Definir a URL da imagem
                      if (c.getUsuario() != null) dto.setCriadorVulgo(c.getUsuario().getVulgo());
                      return dto;
                 }).collect(Collectors.toList());

@@ -1,6 +1,5 @@
 package com.luis.drakdex.model;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,20 +18,24 @@ public class Criatura {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String nome;
-    private String tipo;
-    private Integer nivel;
+
+    @Column(columnDefinition = "TEXT")
     private String descricao;
 
-    // --- NOVO RELACIONAMENTO ---
-    @ManyToOne // Muitas criaturas -> Um Usuário
-    @JoinColumn(name = "usuario_id", nullable = false) // Cria coluna 'usuario_id' no banco
-    private Usuario usuario;
+    private Integer nivel;
+    private String tipo;
 
-    // RELACIONAMENTO COM PASTA
-    // Note: deixamos nullable = true por enquanto para não quebrar criaturas antigas
+    // URL da imagem armazenada como texto longo
+    @Column(columnDefinition = "TEXT")
+    private String imagemUrl;
+
     @ManyToOne
-    @JoinColumn(name = "pasta_id", nullable = true) 
-    @JsonIgnore // O Frontend não precisa receber o objeto Pasta inteiro dentro da criatura
+    @JoinColumn(name = "pasta_id")
     private Pasta pasta;
+
+    @ManyToOne
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 }
