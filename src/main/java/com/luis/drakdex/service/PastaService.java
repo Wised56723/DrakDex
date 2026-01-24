@@ -136,4 +136,36 @@ public class PastaService {
             itensDTO              // Devolve os itens
         );
     }
+
+    
+
+    @Transactional
+    public PastaResponseDTO atualizar(Long id, String novoNome, Usuario usuario) {
+        Pasta pasta = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pasta não encontrada"));
+
+        // Segurança: Só o dono pode renomear
+        if (!pasta.getUsuario().getId().equals(usuario.getId())) {
+            throw new RuntimeException("Você não tem permissão para renomear esta pasta!");
+        }
+
+        pasta.setNome(novoNome);
+        repository.save(pasta);
+        return converterParaDTO(pasta);
+    }
+
+    @Transactional
+    public void deletar(Long id, Usuario usuario) {
+        Pasta pasta = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pasta não encontrada"));
+
+        // Segurança: Só o dono pode apagar
+        if (!pasta.getUsuario().getId().equals(usuario.getId())) {
+            throw new RuntimeException("Você não tem permissão para apagar esta pasta!");
+        }
+
+        // O CascadeType.ALL na entidade Pasta vai apagar subpastas, itens e criaturas automaticamente
+        repository.delete(pasta);
+    }
+    
 }

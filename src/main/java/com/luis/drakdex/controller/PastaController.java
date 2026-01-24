@@ -5,9 +5,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -55,5 +57,21 @@ public class PastaController {
     @GetMapping("/{id}")
     public ResponseEntity<PastaResponseDTO> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(service.buscarPorId(id));
+    }
+
+    // ADICIONE ESTES MÉTODOS NO FINAL DA CLASSE
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PastaResponseDTO> atualizar(@PathVariable Long id, @RequestBody PastaRequestDTO dados) {
+        Usuario usuario = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        // Usamos o DTO, mas aproveitamos apenas o campo 'nome' para renomear
+        return ResponseEntity.ok(service.atualizar(id, dados.nome(), usuario));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+        Usuario usuario = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        service.deletar(id, usuario);
+        return ResponseEntity.noContent().build();
     }
 }
