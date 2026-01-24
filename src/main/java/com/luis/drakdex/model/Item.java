@@ -38,6 +38,10 @@ public class Item {
     @Enumerated(EnumType.STRING)
     private Raridade raridade; // Opcional (pode ser null)
 
+    // URL da imagem do item
+    @Column(columnDefinition = "TEXT")
+    private String imagemUrl;
+
     // Atributos numéricos básicos
     private Double peso; // Em Kg
     private String preco; // String para permitir "10 PO", "5 PP"

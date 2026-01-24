@@ -113,7 +113,8 @@ public class ItemService {
             item.getDano(),
             item.getDefesa(),
             item.getPropriedades(),
-            item.getUsuario().getVulgo()
+            item.getUsuario().getVulgo(),
+            item.getImagemUrl()
         );
     }
 }

@@ -118,7 +118,7 @@ public class PastaService {
                 .map(i -> new ItemResponseDTO(
                     i.getId(), i.getNome(), i.getDescricao(), i.getTipo(), i.getRaridade(),
                     i.getPeso(), i.getPreco(), i.getDano(), i.getDefesa(), i.getPropriedades(),
-                    i.getUsuario().getVulgo()
+                    i.getUsuario().getVulgo(),i.getImagemUrl()
                 )).collect(Collectors.toList());
 
         String donoVulgo = pasta.getUsuario() != null ? pasta.getUsuario().getVulgo() : "Desconhecido";

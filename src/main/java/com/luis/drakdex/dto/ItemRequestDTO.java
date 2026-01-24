@@ -16,5 +16,6 @@ public record ItemRequestDTO(
     String dano,
     String defesa,
     String propriedades,
-    Long pastaId // <--- NOVO: ID da pasta onde salvar
+    Long pastaId, // <--- NOVO: ID da pasta onde salvar
+    String imagemUrl // <--- NOVO: URL da imagem do item
 ) {}

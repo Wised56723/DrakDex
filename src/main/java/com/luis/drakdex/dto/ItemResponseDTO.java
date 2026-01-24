@@ -14,5 +14,6 @@ public record ItemResponseDTO(
     String dano,
     String defesa,
     String propriedades,
-    String donoVulgo
+    String donoVulgo,
+    String imagemUrl
 ) {}
