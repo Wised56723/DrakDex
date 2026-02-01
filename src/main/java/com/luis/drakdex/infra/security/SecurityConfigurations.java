@@ -37,6 +37,8 @@ public class SecurityConfigurations {
                         // ROTAS DE LEITURA (Públicas ou Privadas? Tu decides. Vamos deixar públicas por enquanto para facilitar)
                         .requestMatchers(HttpMethod.GET, "/api/criaturas/**").permitAll()
                         
+                        .requestMatchers("/api/external/**").authenticated() // Só quem tem login pode importar
+
                         // QUALQUER OUTRA COISA (Criar, Editar, Apagar) -> EXIGE LOGIN
                         .anyRequest().authenticated()
                 )
