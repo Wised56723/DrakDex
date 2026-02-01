@@ -152,7 +152,7 @@ public class CriaturaController {
     // GET /api/criaturas/integracao/dnd
     @GetMapping("/integracao/dnd")
     public ResponseEntity<Object> buscarDaApiDnd() {
-        Object dadosExternos = dndApiService.buscarMonstrosExternos();
+        Object dadosExternos = dndApiService.getMonsters();
         return ResponseEntity.ok(dadosExternos);
     }
 
