@@ -102,12 +102,13 @@ public class ItemService {
     }
 
     private ItemResponseDTO converterParaDTO(Item item) {
+        // CORREÇÃO: Adicionado .name() para converter Enum em String
         return new ItemResponseDTO(
             item.getId(),
             item.getNome(),
             item.getDescricao(),
-            item.getTipo(),
-            item.getRaridade(),
+            item.getTipo() != null ? item.getTipo().name() : null, 
+            item.getRaridade() != null ? item.getRaridade().name() : null,
             item.getPeso(),
             item.getPreco(),
             item.getDano(),

@@ -42,8 +42,9 @@ public class PastaController {
             @RequestParam(defaultValue = "CRIATURA") CategoriaPasta tipo) {
         
         Usuario usuario = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        // Agora passamos o tipo (ITEM ou CRIATURA) para o serviço filtrar
-        return ResponseEntity.ok(service.listarMinhasPastasRaiz(usuario, tipo));
+        
+        // CORREÇÃO: O nome do método no Service é 'listarMinhasPastas'
+        return ResponseEntity.ok(service.listarMinhasPastas(usuario, tipo));
     }
 
     @GetMapping("/publicas")
@@ -59,13 +60,12 @@ public class PastaController {
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
-    // ADICIONE ESTES MÉTODOS NO FINAL DA CLASSE
-
     @PutMapping("/{id}")
     public ResponseEntity<PastaResponseDTO> atualizar(@PathVariable Long id, @RequestBody PastaRequestDTO dados) {
         Usuario usuario = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        // Usamos o DTO, mas aproveitamos apenas o campo 'nome' para renomear
-        return ResponseEntity.ok(service.atualizar(id, dados.nome(), usuario));
+        
+        // CORREÇÃO: Passar o objeto 'dados' completo, não apenas o nome
+        return ResponseEntity.ok(service.atualizar(id, dados, usuario));
     }
 
     @DeleteMapping("/{id}")
