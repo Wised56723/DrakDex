@@ -2,19 +2,16 @@ package com.luis.drakdex.dto;
 
 import java.util.List;
 
-import com.luis.drakdex.model.enums.CategoriaPasta;
-
 public record PastaResponseDTO(
     Long id,
     String nome,
     boolean publica,
     Long pastaPaiId,
+    String categoria, // String, não o Enum CategoriaPasta
     List<PastaResponseDTO> subPastas,
-    int quantidadeCriaturas,
-    List<CriaturaDTO> criaturas,
-    String donoVulgo,
-    
-    // NOVOS CAMPOS
-    CategoriaPasta categoria,
-    List<ItemResponseDTO> itens // <--- Lista de itens dentro da pasta
+    List<CriaturaResponseDTO> criaturas,
+    List<ItemResponseDTO> itens,
+    List<MagiaResponseDTO> magias, 
+    List<NpcResponseDTO> npcs,     
+    String donoVulgo
 ) {}
