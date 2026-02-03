@@ -43,7 +43,6 @@ class PastaServiceTest {
         usuario.setId(1L);
         usuario.setVulgo("CaçadorTeste");
 
-        // Atualizado: Adicionado CategoriaPasta.CRIATURA
         PastaRequestDTO dto = new PastaRequestDTO("Pasta Raiz", true, null, CategoriaPasta.CRIATURA);
 
         when(repository.save(any(Pasta.class))).thenAnswer(invocation -> {
@@ -74,7 +73,6 @@ class PastaServiceTest {
         Pasta pai = new Pasta(); pai.setId(2L); pai.setPastaPai(avo); pai.setUsuario(usuario); pai.setCategoria(CategoriaPasta.CRIATURA);
         Pasta neto = new Pasta(); neto.setId(3L); neto.setPastaPai(pai); neto.setUsuario(usuario); neto.setCategoria(CategoriaPasta.CRIATURA);
 
-        // Atualizado: Adicionado CategoriaPasta.CRIATURA
         PastaRequestDTO dtoBisneto = new PastaRequestDTO("Bisneto Ilegal", true, 3L, CategoriaPasta.CRIATURA);
 
         when(repository.findById(3L)).thenReturn(Optional.of(neto));
@@ -101,9 +99,8 @@ class PastaServiceTest {
         Pasta pastaAlheia = new Pasta();
         pastaAlheia.setId(5L);
         pastaAlheia.setUsuario(outroUsuario);
-        pastaAlheia.setCategoria(CategoriaPasta.CRIATURA); // Importante definir a categoria
+        pastaAlheia.setCategoria(CategoriaPasta.CRIATURA);
 
-        // Atualizado: Adicionado CategoriaPasta.CRIATURA
         PastaRequestDTO dto = new PastaRequestDTO("Tentativa de Invasão", true, 5L, CategoriaPasta.CRIATURA);
 
         when(repository.findById(5L)).thenReturn(Optional.of(pastaAlheia));
@@ -124,11 +121,10 @@ class PastaServiceTest {
         p1.setUsuario(new Usuario());
         p1.setCategoria(CategoriaPasta.CRIATURA);
 
-        // Atualizado: Mockando o novo método do repositório que filtra por categoria
         when(repository.findByPublicaTrueAndPastaPaiIsNullAndCategoria(CategoriaPasta.CRIATURA))
                 .thenReturn(List.of(p1));
 
-        // AÇÃO (Atualizado: Passando a categoria)
+        // AÇÃO
         var resultado = service.listarPublicas(CategoriaPasta.CRIATURA);
 
         // VERIFICAÇÃO
@@ -148,18 +144,16 @@ class PastaServiceTest {
         minhaPasta.setUsuario(eu);
         minhaPasta.setCategoria(CategoriaPasta.CRIATURA);
 
-        // Atualizado: Mockando o método com Categoria
         when(repository.findByUsuarioIdAndPastaPaiIsNullAndCategoria(10L, CategoriaPasta.CRIATURA))
                 .thenReturn(List.of(minhaPasta));
 
-        // AÇÃO (Atualizado: Passando a categoria)
-        var resultado = service.listarMinhasPastasRaiz(eu, CategoriaPasta.CRIATURA);
+        // AÇÃO (CORRIGIDA: Nome do método atualizado para 'listarMinhasPastas')
+        var resultado = service.listarMinhasPastas(eu, CategoriaPasta.CRIATURA);
 
         // VERIFICAÇÃO
         assertFalse(resultado.isEmpty());
         assertEquals("Minha Pasta", resultado.get(0).nome());
         
-        // Verifica se chamou o método novo
         verify(repository).findByUsuarioIdAndPastaPaiIsNullAndCategoria(10L, CategoriaPasta.CRIATURA);
     }
 }
